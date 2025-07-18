@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd SwissDraw && npm run build",
+  "installCommand": "cd SwissDraw && npm install"
+} 
