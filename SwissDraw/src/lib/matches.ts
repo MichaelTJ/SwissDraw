@@ -282,13 +282,11 @@ export async function deleteMatch(matchId: string): Promise<boolean> {
 		return false;
 	}
 }
-
 /**
  * Delete all matches for a specific student
  * @param studentId - ID of the student whose matches should be deleted
  * @returns boolean - true if matches were deleted successfully
- */
-export async function deleteMatchesByStudent(studentId: string): Promise<boolean> {
+ */export async function deleteMatchesByStudent(studentId: string): Promise<boolean> {
 	try {
 		let matches: Match[] = [];
 		
@@ -352,3 +350,4 @@ export async function deleteMatchesByStudent(studentId: string): Promise<boolean
 		return false;
 	}
 } 
+
