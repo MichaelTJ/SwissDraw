@@ -1,36 +1,25 @@
 import { json } from '@sveltejs/kit';
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { RequestHandler } from './$types';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'students.json');
-
-// Ensure data directory exists
-async function ensureDataDir() {
-	const dataDir = path.dirname(DATA_FILE);
-	try {
-		await fs.access(dataDir);
-	} catch {
-		await fs.mkdir(dataDir, { recursive: true });
+// In-memory storage for Vercel compatibility
+// Note: This will reset on each serverless function cold start
+// For production, consider using Vercel KV or a database
+let studentsData: any[] = [
+	{
+		"id": "1758109941950",
+		"name": "a",
+		"score": 0
 	}
-}
+];
 
-// Read students from file
+// Read students from memory
 async function readStudents() {
-	try {
-		await ensureDataDir();
-		const data = await fs.readFile(DATA_FILE, 'utf-8');
-		return JSON.parse(data);
-	} catch {
-		// File doesn't exist or is invalid, return empty array
-		return [];
-	}
+	return studentsData;
 }
 
-// Write students to file
+// Write students to memory
 async function writeStudents(students: any[]) {
-	await ensureDataDir();
-	await fs.writeFile(DATA_FILE, JSON.stringify(students, null, 2));
+	studentsData = students;
 }
 
 export const GET: RequestHandler = async () => {
