@@ -1,41 +1,19 @@
 import { json } from '@sveltejs/kit';
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'matches.json');
+// In-memory storage for Vercel compatibility
+// Note: This will reset on each serverless function cold start
+// For production, consider using Vercel KV or a database
+let matchesData: any[] = [];
 
-// Ensure data directory exists
-async function ensureDataDir() {
-	const dataDir = path.dirname(DATA_FILE);
-	try {
-		await fs.access(dataDir);
-	} catch {
-		await fs.mkdir(dataDir, { recursive: true });
-	}
-}
-
-// Read matches from file
+// Read matches from memory
 async function readMatches() {
-	try {
-		await ensureDataDir();
-		const data = await fs.readFile(DATA_FILE, 'utf-8');
-		const matches = JSON.parse(data);
-		// Convert date strings back to Date objects
-		return matches.map((match: any) => ({
-			...match,
-			date: new Date(match.date)
-		}));
-	} catch {
-		// File doesn't exist or is invalid, return empty array
-		return [];
-	}
+	return matchesData;
 }
 
-// Write matches to file
+// Write matches to memory
 async function writeMatches(matches: any[]) {
-	await ensureDataDir();
-	await fs.writeFile(DATA_FILE, JSON.stringify(matches, null, 2));
+	matchesData = matches;
 }
 
 export const GET: RequestHandler = async () => {
