@@ -64,12 +64,24 @@ export const POST: RequestHandler = async ({ request }) => {
 
 export const DELETE: RequestHandler = async ({ request }) => {
 	const matches = await readMatches();
-	const { id } = await request.json();
+	const { id, studentId } = await request.json();
 	
-	const filteredMatches = matches.filter((m: any) => m.id !== id);
+	let filteredMatches;
 	
-	if (filteredMatches.length === matches.length) {
-		return json({ error: 'Match not found' }, { status: 404 });
+	// If studentId is provided, delete all matches for that student
+	if (studentId) {
+		filteredMatches = matches.filter((m: any) => 
+			m.playerA !== studentId && m.playerB !== studentId
+		);
+	} else if (id) {
+		// Otherwise, delete specific match by id
+		filteredMatches = matches.filter((m: any) => m.id !== id);
+		
+		if (filteredMatches.length === matches.length) {
+			return json({ error: 'Match not found' }, { status: 404 });
+		}
+	} else {
+		return json({ error: 'Either id or studentId must be provided' }, { status: 400 });
 	}
 	
 	await writeMatches(filteredMatches);

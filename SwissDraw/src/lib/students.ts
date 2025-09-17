@@ -1,3 +1,5 @@
+import { deleteMatchesByStudent } from './matches';
+
 export interface Student {
 	id: string;
 	name: string;
@@ -61,6 +63,14 @@ export async function updateStudent(id: string, name: string, score: number): Pr
 
 export async function deleteStudent(id: string): Promise<boolean> {
 	try {
+		// First, delete all matches involving this student
+		const matchesDeleted = await deleteMatchesByStudent(id);
+		if (!matchesDeleted) {
+			console.error('Failed to delete matches for student');
+			return false;
+		}
+		
+		// Then delete the student
 		const response = await fetch('/api/students', {
 			method: 'DELETE',
 			headers: {

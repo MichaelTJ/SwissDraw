@@ -281,4 +281,74 @@ export async function deleteMatch(matchId: string): Promise<boolean> {
 		console.error('Error deleting match:', error);
 		return false;
 	}
+}
+
+/**
+ * Delete all matches for a specific student
+ * @param studentId - ID of the student whose matches should be deleted
+ * @returns boolean - true if matches were deleted successfully
+ */
+export async function deleteMatchesByStudent(studentId: string): Promise<boolean> {
+	try {
+		let matches: Match[] = [];
+		
+		// Get current matches from store
+		const unsubscribe = matchHistory.subscribe(m => {
+			matches = m;
+		});
+		unsubscribe();
+		
+		// Find all matches involving this student
+		const matchesToDelete = matches.filter(match => 
+			match.playerA === studentId || match.playerB === studentId
+		);
+		
+		if (matchesToDelete.length === 0) {
+			return true; // No matches to delete
+		}
+		
+		// Call API to delete matches from server
+		const response = await fetch('/api/matches', {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ studentId })
+		});
+		
+		if (!response.ok) {
+			throw new Error('Failed to delete matches from server');
+		}
+		
+		// Remove all matches involving this student from history
+		matchHistory.update(matches => 
+			matches.filter(match => 
+				match.playerA !== studentId && match.playerB !== studentId
+			)
+		);
+		
+		// Revert score changes for all matches involving this student
+		const students = await getStudents();
+		
+		for (const match of matchesToDelete) {
+			const otherPlayerId = match.playerA === studentId ? match.playerB : match.playerA;
+			const otherPlayer = students.find(s => s.id === otherPlayerId);
+			
+			if (otherPlayer) {
+				// Revert the other player's score change
+				if (match.winner === otherPlayerId) {
+					// Other player won, so revert their +1 score
+					await updateStudent(otherPlayerId, otherPlayer.name, otherPlayer.score - 1);
+				} else {
+					// Other player lost, so revert their -1 score
+					await updateStudent(otherPlayerId, otherPlayer.name, otherPlayer.score + 1);
+				}
+			}
+		}
+		
+		return true;
+	} catch (error) {
+		console.error('Error deleting matches for student:', error);
+		return false;
+	}
 } 
