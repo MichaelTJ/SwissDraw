@@ -4,6 +4,11 @@ export interface Student {
 	id: string;
 	name: string;
 	score: number;
+	chessComUsername?: string;
+	userId?: string | null;
+	wins?: number;
+	losses?: number;
+	draws?: number;
 }
 
 export async function getStudents(): Promise<Student[]> {
@@ -19,14 +24,14 @@ export async function getStudents(): Promise<Student[]> {
 	}
 }
 
-export async function addStudent(name: string, score: number): Promise<Student | null> {
+export async function addStudent(name: string, score: number, chessComUsername?: string): Promise<Student | null> {
 	try {
 		const response = await fetch('/api/students', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ name, score })
+			body: JSON.stringify({ name, score, chessComUsername })
 		});
 		
 		if (!response.ok) {
@@ -40,14 +45,14 @@ export async function addStudent(name: string, score: number): Promise<Student |
 	}
 }
 
-export async function updateStudent(id: string, name: string, score: number): Promise<Student | null> {
+export async function updateStudent(id: string, name: string, score: number, chessComUsername?: string): Promise<Student | null> {
 	try {
 		const response = await fetch('/api/students', {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ id, name, score })
+			body: JSON.stringify({ id, name, score, chessComUsername })
 		});
 		
 		if (!response.ok) {

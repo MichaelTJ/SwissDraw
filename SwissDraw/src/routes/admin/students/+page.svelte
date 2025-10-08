@@ -12,9 +12,11 @@
 	let students: Student[] = [];
 	let newStudentName = '';
 	let newStudentScore = 0;
+	let newChessComUsername = '';
 	let editingStudent: Student | null = null;
 	let editName = '';
 	let editScore = 0;
+	let editChessComUsername = '';
 	let loading = false;
 
 	// Load students from server on mount
@@ -25,13 +27,14 @@
 	});
 
 	async function addStudent() {
-		if (newStudentName.trim()) {
+		if (newStudentName.trim() && newChessComUsername.trim()) {
 			loading = true;
-			const newStudent = await addStudentUtil(newStudentName, newStudentScore);
+			const newStudent = await addStudentUtil(newStudentName, newStudentScore, newChessComUsername);
 			if (newStudent) {
 				students = [...students, newStudent];
 				newStudentName = '';
 				newStudentScore = 0;
+				newChessComUsername = '';
 			}
 			loading = false;
 		}
@@ -41,12 +44,13 @@
 		editingStudent = student;
 		editName = student.name;
 		editScore = student.score;
+		editChessComUsername = student.chessComUsername || '';
 	}
 
 	async function saveEdit() {
-		if (editingStudent && editName.trim()) {
+		if (editingStudent && editName.trim() && editChessComUsername.trim()) {
 			loading = true;
-			const updatedStudent = await updateStudent(editingStudent.id, editName, editScore);
+			const updatedStudent = await updateStudent(editingStudent.id, editName, editScore, editChessComUsername);
 			if (updatedStudent) {
 				students = students.map(s => 
 					s.id === editingStudent!.id ? updatedStudent : s
@@ -55,6 +59,7 @@
 			editingStudent = null;
 			editName = '';
 			editScore = 0;
+			editChessComUsername = '';
 			loading = false;
 		}
 	}
@@ -63,6 +68,7 @@
 		editingStudent = null;
 		editName = '';
 		editScore = 0;
+		editChessComUsername = '';
 	}
 
 	async function deleteStudent(id: string) {
@@ -106,14 +112,21 @@
 				disabled={loading}
 			/>
 			<input
+				type="text"
+				placeholder="Chess.com username *"
+				bind:value={newChessComUsername}
+				on:keydown={(e) => e.key === 'Enter' && addStudent()}
+				disabled={loading}
+			/>
+			<input
 				type="number"
-				placeholder="Score"
+				placeholder="Initial Score"
 				bind:value={newStudentScore}
 				min="0"
 				on:keydown={(e) => e.key === 'Enter' && addStudent()}
 				disabled={loading}
 			/>
-			<button on:click={addStudent} disabled={!newStudentName.trim() || loading}>
+			<button on:click={addStudent} disabled={!newStudentName.trim() || !newChessComUsername.trim() || loading}>
 				{loading ? 'Adding...' : 'Add Student'}
 			</button>
 		</div>
@@ -147,11 +160,19 @@
 							<div class="edit-form">
 								<input
 									type="text"
+									placeholder="Name"
 									bind:value={editName}
 									on:keydown={(e) => e.key === 'Enter' && saveEdit()}
 								/>
 								<input
+									type="text"
+									placeholder="Chess.com username"
+									bind:value={editChessComUsername}
+									on:keydown={(e) => e.key === 'Enter' && saveEdit()}
+								/>
+								<input
 									type="number"
+									placeholder="Score"
 									bind:value={editScore}
 									min="0"
 									on:keydown={(e) => e.key === 'Enter' && saveEdit()}
@@ -169,7 +190,10 @@
 							<!-- Display Mode -->
 							<div class="student-info">
 								<span class="student-name">{student.name}</span>
-								<span class="student-score">Score: {student.score}</span>
+								<span class="student-details">
+									<span class="chess-username">♟️ {student.chessComUsername || 'No username'}</span>
+									<span class="student-score">Score: {student.score}</span>
+								</span>
 							</div>
 							<div class="student-actions">
 								<button class="edit-btn" on:click={() => startEdit(student)} disabled={loading}>
@@ -343,13 +367,25 @@
 	.student-info {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 0.5rem;
 	}
 
 	.student-name {
 		font-weight: 600;
 		color: #2c3e50;
 		font-size: 1.1rem;
+	}
+
+	.student-details {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.chess-username {
+		color: #3498db;
+		font-size: 0.9rem;
+		font-weight: 500;
 	}
 
 	.student-score {
