@@ -1,28 +1,23 @@
 import type { User } from '../app.d';
-import fs from 'fs/promises';
-import path from 'path';
 import { randomUUID } from 'crypto';
 
-const USERS_FILE = path.join(process.cwd(), 'data', 'users.json');
+// In-memory storage for Vercel compatibility
+// Note: This will reset on each serverless function cold start
+// For production, consider using Vercel KV or a database
+let usersData: User[] = [];
 
 /**
- * Load all users from the JSON file
+ * Load all users from memory
  */
 export async function loadUsers(): Promise<User[]> {
-	try {
-		const data = await fs.readFile(USERS_FILE, 'utf-8');
-		return JSON.parse(data);
-	} catch (error) {
-		// If file doesn't exist, return empty array
-		return [];
-	}
+	return usersData;
 }
 
 /**
- * Save users to the JSON file
+ * Save users to memory
  */
 async function saveUsers(users: User[]): Promise<void> {
-	await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+	usersData = users;
 }
 
 /**
