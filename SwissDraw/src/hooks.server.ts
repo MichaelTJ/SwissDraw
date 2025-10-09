@@ -12,7 +12,7 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 		const user = await ensureUserExists({
 			email: session.user.email,
 			name: session.user.name || session.user.email,
-			isDefaultAdmin: session.user.email === ADMIN_EMAIL
+			isDefaultAdmin: session.user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()
 		});
 
 		// Attach user info to locals for easy access

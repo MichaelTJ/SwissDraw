@@ -18,7 +18,7 @@
 	});
 
 	async function handleSignIn() {
-		await signIn('microsoft-entra-id', { callbackUrl: '/auth/callback' });
+		await signIn('microsoft-entra-id', { redirectTo: '/' });
 	}
 </script>
 

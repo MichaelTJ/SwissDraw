@@ -63,8 +63,10 @@ export async function ensureUserExists(data: {
 		await saveUsers(users);
 	} else if (data.isDefaultAdmin && user.role !== 'admin') {
 		// Update existing user to admin if they should be admin
-		user.role = 'admin';
-		await updateUser(user.id, { role: 'admin' });
+		const updatedUser = await updateUser(user.id, { role: 'admin' });
+		if (updatedUser) {
+			user = updatedUser;
+		}
 	}
 
 	return user;
