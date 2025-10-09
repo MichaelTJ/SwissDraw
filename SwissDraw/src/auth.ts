@@ -20,6 +20,8 @@ if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET || !MICROSOFT_TENANT_ID || 
 export const { handle, signIn, signOut } = SvelteKitAuth({
 	providers: [
 		MicrosoftEntraId({
+			id: 'microsoft-entra-id',
+			name: 'Microsoft',
 			clientId: MICROSOFT_CLIENT_ID,
 			clientSecret: MICROSOFT_CLIENT_SECRET,
 			tenantId: MICROSOFT_TENANT_ID,
@@ -33,7 +35,6 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 	],
 	secret: AUTH_SECRET,
 	trustHost: true,
-	basePath: '/auth',
 	debug: true, // Enable debug logging for Vercel
 	callbacks: {
 		async session({ session, token }) {
